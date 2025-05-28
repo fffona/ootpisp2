@@ -33,7 +33,6 @@ namespace ootpisp
 
             this.KeyPreview = true; // Чтобы форма получала события клавиш
             this.KeyDown += Form1_KeyDown;
-
             this.Resize += Form1_Resize;
 
             timer = new Timer();
@@ -182,7 +181,7 @@ namespace ootpisp
             customMenu.Visible = false;
         }
 
-    private void Form1_KeyDown(object sender, KeyEventArgs e)
+        private void Form1_KeyDown(object sender, KeyEventArgs e)
         {
             switch (e.KeyCode)
             {
@@ -233,7 +232,6 @@ namespace ootpisp
 
         private void Form1_Resize(object sender, EventArgs e)
         {
-            // Обновляем размеры игрового поля при изменении окна
             stage.Resize(this.ClientSize.Width, this.ClientSize.Height);
             customMenu.Location = new Point((this.ClientSize.Width - customMenu.Width) / 2, (this.ClientSize.Height - customMenu.Height) / 2);
         }
@@ -274,7 +272,7 @@ namespace ootpisp
             this.MinimizeBox = false;
             this.StartPosition = FormStartPosition.CenterParent;
 
-            changeBackground = new Button { Text="Изменить фон", Width = 120, Location = new Point((this.ClientSize.Width - 120) / 2, 10) };
+            changeBackground = new Button { Text = "Изменить фон", Width = 120, Location = new Point((this.ClientSize.Width - 120) / 2, 10) };
             changeAmount = new Button { Text = "Изменить количество фигур", Width = 180, Location = new Point((this.ClientSize.Width - 180) / 2, 50) };
 
             changeBackground.Click += ChangeBackground_Click;
@@ -290,7 +288,7 @@ namespace ootpisp
             changeAmount.Visible = false;
             changeBackground.Visible = false;
 
-            Label label = new Label { Text="Количество фигур:", TextAlign = ContentAlignment.MiddleCenter, Width = 110, Height = 20, Location = new Point((this.ClientSize.Width - 110) / 2, 10) };
+            Label label = new Label { Text = "Количество фигур:", TextAlign = ContentAlignment.MiddleCenter, Width = 110, Height = 20, Location = new Point((this.ClientSize.Width - 110) / 2, 10) };
             objectCountUpDown = new NumericUpDown
             {
                 Location = new Point((this.ClientSize.Width - 50) / 2, 35),

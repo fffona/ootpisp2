@@ -105,18 +105,14 @@ namespace ootpisp
         public DisplayObject(double x, double y)
         {
             position = new PointD(x, y);
-            // Случайная скорость от 1 до 5
             double speed = rand.NextDouble() * 7 + 1;
-            // Случайный угол направления в радианах
             double angle = rand.NextDouble() * 2 * Math.PI;
             velocity = new PointD(
                 speed * Math.Cos(angle),
                 speed * Math.Sin(angle)
             );
             acceleration = new PointD(0, 0);
-            // Случайный цвет
             fillColor = Color.FromArgb(rand.Next(256), rand.Next(256), rand.Next(256));
-            // Случайная толщина рамки от 1 до 4
             borderThickness = rand.NextDouble() * 3 + 1;
             borderPen = new Pen(Color.Black, (float)borderThickness);
             size = rand.NextDouble() * 30 + 10;
@@ -211,12 +207,12 @@ namespace ootpisp
                     double normalSpeed = relativeVelocityX * nx + relativeVelocityY * ny;
                     if (normalSpeed >= 0) return;
 
-                    double impulse = (2 * normalSpeed) / (mass + other.mass);
+                    double impulse = (2 * normalSpeed * mass * other.mass) / (mass + other.mass);
 
-                    velocity.X -= impulse * other.mass * nx;
-                    velocity.Y -= impulse * other.mass * ny;
-                    other.velocity.X += impulse * mass * nx;
-                    other.velocity.Y += impulse * mass * ny;
+                    velocity.X -= (impulse / mass) * nx;
+                    velocity.Y -= (impulse / mass) * ny;
+                    other.velocity.X += (impulse / other.mass) * nx;
+                    other.velocity.Y += (impulse / other.mass) * ny;
 
                     // Сдвигаем, чтобы не залипли
                     double overlap = minDistance - distance;

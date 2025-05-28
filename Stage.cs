@@ -59,7 +59,7 @@ namespace ootpisp
         public void ChangeAmount(int amount)
         {
             gameObjects = new DisplayObject[amount];
-        } 
+        }
 
         public void AddObject(DisplayObject obj)
         {
