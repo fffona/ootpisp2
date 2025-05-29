@@ -193,10 +193,11 @@ namespace ootpisp
 
                 double dx = position.X - other.position.X;
                 double dy = position.Y - other.position.Y;
-                double distance = Math.Sqrt(dx * dx + dy * dy);
+                double distanceSquared = dx * dx + dy * dy;
                 double minDistance = size + other.size;
+                double distance = Math.Sqrt(distanceSquared);
 
-                if (distance < minDistance && distance > 0) // Столкновение произошло
+                if (distanceSquared < minDistance * minDistance && distance > 0) // Столкновение произошло
                 {
                     double nx = dx / distance; // Нормализованный вектор направления
                     double ny = dy / distance;
@@ -222,7 +223,100 @@ namespace ootpisp
                     other.position.X -= nx * correction;
                     other.position.Y -= ny * correction;
                 }
+                else
+                {
+                    double relativeVelocityX = velocity.X - other.velocity.X;
+                    double relativeVelocityY = velocity.Y - other.velocity.Y;
+
+                    double a = relativeVelocityX * relativeVelocityX + relativeVelocityY * relativeVelocityY;
+                    double b = 2 * (dx * relativeVelocityX + dy * relativeVelocityY);
+                    double c = distanceSquared - minDistance * minDistance;
+
+                    // Пропускаем, если шары неподвижны относительно друг друга
+                    if (a == 0) continue;
+
+                    double discriminant = b * b - 4 * a * c;
+
+                    // Если есть реальное столкновение в пределах одного кадра
+                    if (discriminant >= 0)
+                    {
+                        double t = (-b - Math.Sqrt(discriminant)) / (2 * a);
+                        if (t >= 0 && t <= 1)
+                        {
+                            // Перемещаем шары в точку столкновения
+                            position.X -= velocity.X * t;
+                            position.Y -= velocity.Y * t;
+                            other.position.X -= other.velocity.X * t;
+                            other.position.Y -= other.velocity.Y * t;
+
+                            // Пересчитываем вектор между центрами в момент столкновения
+                            dx = position.X - other.position.X;
+                            dy = position.Y - other.position.Y;
+                            distance = Math.Sqrt(dx * dx + dy * dy);
+
+                            if (distance > 0)
+                            {
+                                double nx = dx / distance;
+                                double ny = dy / distance;
+
+                                // Пересчитываем относительную скорость
+                                relativeVelocityX = velocity.X - other.velocity.X;
+                                relativeVelocityY = velocity.Y - other.velocity.Y;
+                                double normalSpeed = relativeVelocityX * nx + relativeVelocityY * ny;
+
+                                if (normalSpeed < 0)
+                                {
+                                    // Рассчет импульса
+                                    double impulse = (2 * normalSpeed * mass * other.mass) / (mass + other.mass);
+
+                                    // Обновление скоростей
+                                    velocity.X -= (impulse / mass) * nx;
+                                    velocity.Y -= (impulse / mass) * ny;
+                                    other.velocity.X += (impulse / other.mass) * nx;
+                                    other.velocity.Y += (impulse / other.mass) * ny;
+
+                                    // Коррекция позиций
+                                    double overlap = minDistance - distance;
+                                    if (overlap > 0)
+                                    {
+                                        double correction = overlap / 2;
+                                        position.X += nx * correction;
+                                        position.Y += ny * correction;
+                                        other.position.X -= nx * correction;
+                                        other.position.Y -= ny * correction;
+                                    }
+                                }
+
+                                // Возвращаем шары обратно в конец кадра
+                                position.X += velocity.X * t;
+                                position.Y += velocity.Y * t;
+                                other.position.X += other.velocity.X * t;
+                                other.position.Y += other.velocity.Y * t;
+                            }
+                        }
+                    }
+                }
             }
+        }
+
+        public double? TimeToCollision(DisplayObject other)
+        {
+            double dx = (other.Bounds.X + other.Size) - (Bounds.X + Size);
+            double dy = (other.Bounds.Y + other.Size) - (Bounds.Y + Size);
+            double dvx = other.VelocityX - VelocityX;
+            double dvy = other.VelocityY - VelocityY;
+
+            double a = dvx * dvx + dvy * dvy;
+            if (a == 0) return null; // шары не движутся относительно друг друга
+
+            double b = 2 * (dx * dvx + dy * dvy);
+            double c = dx * dx + dy * dy - (Size + other.Size) * (Size + other.Size);
+
+            double discriminant = b * b - 4 * a * c;
+            if (discriminant < 0) return null;
+
+            double t = (-b - (double)Math.Sqrt(discriminant)) / (2 * a);
+            return (t >= 0 && t <= 1.0d) ? t : (double?)null;
         }
 
         public abstract void Draw(Graphics g);
