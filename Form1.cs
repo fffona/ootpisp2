@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.IO;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.Rebar;
+using System.Data.SqlTypes;
 
 namespace ootpisp
 {
@@ -34,6 +35,7 @@ namespace ootpisp
             this.KeyPreview = true; // Чтобы форма получала события клавиш
             this.KeyDown += Form1_KeyDown;
             this.Resize += Form1_Resize;
+            this.MouseMove += Form1_MouseMove;
 
             timer = new Timer();
             timer.Interval = 6; // ~165 FPS
@@ -111,18 +113,21 @@ namespace ootpisp
         public void InitializeGame()
         {
             stage.ClearObjects();
-            for (int i = 0; i < stage.GetObjects().Length; i++)
+            for (int i = 0; i < 20; i++)
             {
                 stage.AddObject(new Circle(
                     rand.Next(50, this.Width - 50),
-                    rand.Next(50, this.Height - 50)));
+                    rand.Next(50, this.Height - 100)));
             }
+            stage.AddObject(new Paddle(this.ClientSize.Width / 2, this.ClientSize.Height - 100));
+            stage.AddObject(new SpecialCircle(this.ClientSize.Width / 2, this.ClientSize.Height - 140));
         }
 
         private void NewGame_Click(object sender, EventArgs e)
         {
             InitializeGame();
             customMenu.Visible = false;
+            timer.Start();
         }
 
         private void SaveGame_Click(object sender, EventArgs e)
@@ -141,6 +146,7 @@ namespace ootpisp
                 }
             }
             customMenu.Visible = false;
+            timer.Start();
         }
 
         private void LoadGame_Click(object sender, EventArgs e)
@@ -164,6 +170,7 @@ namespace ootpisp
                 }
             }
             customMenu.Visible = false;
+            timer.Start();
         }
 
         private void Settings_Click(object sender, EventArgs e)
@@ -173,6 +180,7 @@ namespace ootpisp
                 settingsForm.ShowDialog(this);
             }
             customMenu.Visible = false;
+            timer.Start();
         }
 
         private void Exit_Click(object sender, EventArgs e)
@@ -205,8 +213,15 @@ namespace ootpisp
 
                 case Keys.M: // Вызов меню
                     customMenu.Visible = !customMenu.Visible;
+                    if (customMenu.Visible) timer.Stop();
+                    else timer.Start();
                     break;
             }
+        }
+
+        private void Form1_MouseMove(object sender, MouseEventArgs e)
+        {
+            stage.UpdatePaddlePosition(e.X);
         }
 
         private void ToggleFullScreen()
@@ -293,7 +308,7 @@ namespace ootpisp
             {
                 Location = new Point((this.ClientSize.Width - 50) / 2, 35),
                 Minimum = 1,
-                Maximum = 300,
+                Maximum = 100,
                 Value = stage.GetObjects().Length,
                 Width = 50
             };
